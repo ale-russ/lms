@@ -95,7 +95,7 @@ const AddNewCoursePage = () => {
       currentEditedCourseId
     );
 
-    if (response.success) {
+    if (response?.success) {
       const setCourseFormData = Object.keys(
         courseLandingInitialFormData
       ).reduce((acc, key) => {

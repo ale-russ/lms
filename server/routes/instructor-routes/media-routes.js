@@ -3,6 +3,7 @@ const multer = require("multer");
 const fs = require("fs");
 
 const { uploadMedia, deleteMedia } = require("../../helpers/cloudinary");
+const Course = require("../../models/Course");
 
 const router = express.Router();
 
@@ -32,7 +33,7 @@ router.post("/upload", upload.single("file"), async (req, res) => {
 router.delete("/delete/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const type = req.body.type;
+    const { courseId, type } = req.body;
 
     if (!id)
       res.status(400).json({ success: false, message: "Media Id is required" });
@@ -43,6 +44,21 @@ router.delete("/delete/:id", async (req, res) => {
       return res
         .status(404)
         .json({ success: false, message: "Media not found" });
+    }
+
+    // update the course, by deleting the lecture and the video from the course after successfully deleting from cloudinary
+    const updatedCourse = await Course.findOneAndUpdate(
+      { _id: courseId },
+      {
+        $pull: { curriculum: { public_id: id } },
+      },
+      { new: true }
+    );
+
+    if (!updatedCourse) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Course not found" });
     }
     res
       .status(200)
@@ -55,7 +71,7 @@ router.delete("/delete/:id", async (req, res) => {
 router.post("/bulk-upload", upload.array("files", 5), async (req, res) => {
   try {
     const uploadPromise = req.files.map((fileItem) =>
-      uploadToCloud(fileItem.path)
+      uploadMedia(fileItem.path)
     );
 
     console.log("uploadPromise: ", uploadPromise);

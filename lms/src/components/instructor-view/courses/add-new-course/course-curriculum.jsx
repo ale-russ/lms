@@ -7,7 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { courseCurriculumInitialFormData } from "@/config";
 import { InstructorContext } from "@/context/instructor-context";
-import { mediaDeleteService, mediaUploadService } from "@/services";
+import {
+  mediaBulkUploadService,
+  mediaDeleteService,
+  mediaUploadService,
+} from "@/services";
 import MediaProgressbar from "@/components/common-form/media-progress";
 import VideoPlayer from "@/components/video-player";
 import { Upload } from "lucide-react";
@@ -20,6 +24,8 @@ const CourseCurriculum = () => {
     setMediaUploadProgress,
     mediaUploadPercentage,
     setMediaUploadPercentage,
+    currentEditedCourseId,
+    setCurrentEditedCourseId,
   } = useContext(InstructorContext);
 
   const bulkUploadRef = useRef(null);
@@ -119,7 +125,81 @@ const CourseCurriculum = () => {
     bulkUploadRef.current?.click();
   }
 
-  function handleBulkUpload() {}
+  function isCurriculumFormDataEmpty(arr) {
+    return arr.every((obj) => {
+      return Object.entries(obj).every(([key, value]) => {
+        if (typeof value === "boolean") {
+          return true;
+        }
+        return value === "";
+      });
+    });
+  }
+
+  async function handleBulkUpload(event) {
+    event.preventDefault();
+    const selectedFiles = Array.from(event.target.files);
+    console.log("selectedFiles: ", selectedFiles);
+
+    const bulkFormData = new FormData();
+    selectedFiles.forEach((fileItem) => {
+      console.log("FileItem: ", fileItem);
+      bulkFormData.append("files", fileItem);
+    });
+
+    try {
+      setMediaUploadProgress(true);
+      const response = await mediaBulkUploadService(
+        bulkFormData,
+        setMediaUploadPercentage
+      );
+      console.log("Bulk upload: ", response);
+      if (response?.success) {
+        let cpyCourseCurriculumFormData = isCurriculumFormDataEmpty(
+          courseCurriculumFormData
+        )
+          ? []
+          : [...courseCurriculumFormData];
+
+        cpyCourseCurriculumFormData = [
+          ...cpyCourseCurriculumFormData,
+          ...response?.data.map((item, index) => ({
+            videoUrl: item?.url,
+            public_id: item?.public_id,
+            title: `Lecture ${
+              cpyCourseCurriculumFormData.length + (index + 1)
+            }`,
+            freePreview: false,
+          })),
+        ];
+        setCourseCurriculumFormData(cpyCourseCurriculumFormData);
+        setMediaUploadProgress(false);
+      }
+    } catch (err) {
+      console.log("Error: ", err);
+    } finally {
+      setMediaUploadProgress(false);
+    }
+  }
+
+  async function handleDeleteLecture(currentIndex) {
+    console.log("Current course id: ", currentEditedCourseId);
+    console.log("Index: ", currentIndex);
+    let cpyCourseCurriculumFormData = [...courseCurriculumFormData];
+    console.log("data: ", cpyCourseCurriculumFormData[currentIndex]);
+    const response = await mediaDeleteService(
+      currentEditedCourseId,
+      cpyCourseCurriculumFormData[currentIndex].public_id,
+      "video"
+    );
+    console.log("Response: ", response);
+    if (response?.success) {
+      cpyCourseCurriculumFormData = cpyCourseCurriculumFormData.filter(
+        (_, index) => index !== currentIndex
+      );
+      setCourseCurriculumFormData(cpyCourseCurriculumFormData);
+    }
+  }
 
   return (
     <Card>
@@ -130,6 +210,7 @@ const CourseCurriculum = () => {
             className="hidden"
             id="bulk-upload"
             type="file"
+            name="files"
             accept="video/*"
             multiple
             ref={bulkUploadRef}
@@ -200,7 +281,12 @@ const CourseCurriculum = () => {
                       <Button onClick={() => handleReplaceVideo(index)}>
                         Replace Video
                       </Button>
-                      <Button className="bg-red-700">Delete Lecture</Button>
+                      <Button
+                        className="bg-red-700"
+                        onClick={() => handleDeleteLecture(index)}
+                      >
+                        Delete Lecture
+                      </Button>
                     </div>
                   </div>
                 ) : (

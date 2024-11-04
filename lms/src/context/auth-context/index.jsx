@@ -18,20 +18,36 @@ export default function AuthProvider({ children }) {
 
   async function handleRegisterUser(e) {
     e.preventDefault();
-    await registerUser(signUpFormData);
+    try {
+      setLoading(true);
+      await registerUser(signUpFormData);
+    } catch (err) {
+      console.log("Error: ", err);
+    } finally {
+      setSignUpFormData(initialSignUpFormData);
+      setLoading(false);
+    }
   }
 
   async function handleLoginUser(e) {
     e.preventDefault();
-    const data = await loginUser(signInFormData);
-    if (data?.success) {
-      sessionStorage.setItem(
-        "accessToken",
-        JSON.stringify(data.data.accessToken)
-      );
-      setAuth({ authenticate: true, user: data.data.user });
-    } else {
+    setLoading(true);
+    try {
+      const data = await loginUser(signInFormData);
+      if (data?.success) {
+        sessionStorage.setItem(
+          "accessToken",
+          JSON.stringify(data.data.accessToken)
+        );
+        setAuth({ authenticate: true, user: data.data.user });
+      } else {
+        setAuth({ authenticate: false, user: null });
+      }
+    } catch (err) {
       setAuth({ authenticate: false, user: null });
+    } finally {
+      setSignInFormData(initialSignInFormData);
+      setLoading(false);
     }
   }
 

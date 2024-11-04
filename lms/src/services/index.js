@@ -43,10 +43,25 @@ export async function mediaUploadService(formData, onProgressCallback) {
     console.log(error);
   }
 }
-export async function mediaDeleteService(id, type = "image") {
+export async function mediaBulkUploadService(formData, onProgressCallback) {
   try {
-    const { data } = await axiosInstance.delete(`media/delete/${id}`, {
-      data: { type },
+    const { data } = await axiosInstance.post("/media/bulk-upload", formData, {
+      onUploadProgress: (ProgressEvent) => {
+        const percentCompleted = Math.round(
+          (ProgressEvent.loaded * 100) / ProgressEvent.total
+        );
+        onProgressCallback(percentCompleted);
+      },
+    });
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+export async function mediaDeleteService(courseId, videoId, type = "image") {
+  try {
+    const { data } = await axiosInstance.delete(`media/delete/${videoId}`, {
+      data: { courseId, type },
     });
     return data;
   } catch (error) {
@@ -91,6 +106,26 @@ export async function updateCourseService(id, formData) {
     const { data } = await axiosInstance.put(
       `/instructor/courses/update/${id}`,
       formData
+    );
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function fetchAllStudentCoursesService() {
+  try {
+    const { data } = await axiosInstance.get(`/student/courses/get`);
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function fetchStudentCourseDetailsService(courseId) {
+  try {
+    const { data } = await axiosInstance.get(
+      `/student/courses/get/details/${courseId}`
     );
     return data;
   } catch (error) {

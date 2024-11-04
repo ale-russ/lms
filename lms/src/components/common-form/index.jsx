@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "../ui/button";
 import FormControls from "./form-controls";
+import { Loader } from "lucide-react";
 
 const CommonForm = ({
   handleSubmit,
@@ -9,6 +10,7 @@ const CommonForm = ({
   formData,
   setFormData,
   isButtonDisabled = false,
+  loading = false,
 }) => {
   return (
     <form onSubmit={handleSubmit}>
@@ -20,7 +22,7 @@ const CommonForm = ({
         setFormData={setFormData}
       />
       <Button disabled={isButtonDisabled} type="submit" className="w-full mt-5">
-        {buttonText || "Submit"}
+        {loading ? <Loader /> : <>{buttonText || "Submit"}</>}
       </Button>
     </form>
   );
