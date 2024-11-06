@@ -32,7 +32,10 @@ function StudentHeader() {
       </div>
       <div className="flex items-center space-x-4">
         <div className="flex gap-4 items-center">
-          <div className="flex items-center gap-3">
+          <div
+            className="flex items-center gap-3 cursor-pointer"
+            onClick={() => navigate("/student-courses")}
+          >
             <span className="font-extrabold md:text-xl text-[14px]">
               My Courses
             </span>

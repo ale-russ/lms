@@ -132,3 +132,45 @@ export async function fetchStudentCourseDetailsService(courseId) {
     console.log(error);
   }
 }
+
+export async function createPaymentService(paymentPayload) {
+  try {
+    const { data } = await axiosInstance.post(
+      `/student/order/create`,
+      paymentPayload
+    );
+
+    return data;
+  } catch (err) {
+    console.log("Error create payments: ", err);
+    return err.response.data;
+  }
+}
+
+export async function captureAndFinalizePaymentService(
+  paymentId,
+  payerId,
+  orderId
+) {
+  try {
+    const { data } = await axiosInstance.post(`/student/order/capture`, {
+      paymentId,
+      payerId,
+      orderId,
+    });
+    return data;
+  } catch (err) {
+    console.log("Error: ", err);
+  }
+}
+
+export async function fetchStudentBoughtCoursesService(studentId) {
+  try {
+    const { data } = await axiosInstance.get(
+      `/student/courses-bought/get/${studentId}`
+    );
+    return data;
+  } catch (err) {
+    console.log("Error: ", err);
+  }
+}
