@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
   DropdownMenu,
@@ -15,21 +16,91 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { StudentContext } from "@/context/student-context";
 import { fetchAllStudentCoursesService } from "@/services";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function StudentCoursesViewPage() {
-  const [sort, setSort] = useState("");
-  const { studentCourses, setStudentCourses } = useContext(StudentContext);
+  const navigate = useNavigate();
+  const [searchParam, setSearchParams] = useSearchParams();
+  const [sort, setSort] = useState("price-lowtohigh");
+  const [filters, setFilters] = useState({});
+  const { studentCourses, setStudentCourses, loadingState, setLoadingState } =
+    useContext(StudentContext);
 
-  async function fetchAllStudentCourses() {
-    const response = await fetchAllStudentCoursesService();
-    console.log("Response: ", response);
-    if (response?.success) {
-      setStudentCourses(response?.data);
+  async function fetchAllStudentCourses(filters, sort) {
+    const query = new URLSearchParams({
+      ...filters,
+      sortBy: sort,
+    });
+    try {
+      setLoadingState(true);
+      const response = await fetchAllStudentCoursesService(query);
+
+      if (response?.success) {
+        setStudentCourses(response?.data);
+      }
+    } catch (error) {
+      console.log("Error: ", error);
+    } finally {
+      setLoadingState(false);
     }
   }
 
+  function handleFilterOnChange(getSectionId, getCurrentOption) {
+    let cpyFilters = { ...filters };
+    const indexOfCurrentSection = Object.keys(cpyFilters).indexOf(getSectionId);
+
+    if (indexOfCurrentSection === -1) {
+      cpyFilters = {
+        ...cpyFilters,
+        [getSectionId]: [getCurrentOption.id],
+      };
+    } else {
+      const indexOfCurrentOption = cpyFilters[getSectionId].indexOf(
+        getCurrentOption.id
+      );
+
+      if (indexOfCurrentOption === -1)
+        cpyFilters[getSectionId].push(getCurrentOption.id);
+      else cpyFilters[getSectionId].splice(indexOfCurrentOption, 1);
+    }
+
+    setFilters(cpyFilters);
+    sessionStorage.setItem("filters", JSON.stringify(cpyFilters));
+  }
+
+  function createSearchParamsHelper(filtersParams) {
+    const queryParams = [];
+
+    for (const [key, value] of Object.entries(filtersParams)) {
+      if (Array.isArray(value) && value.length > 0) {
+        const paramValue = value.join(",");
+        queryParams.push(`${key}=${encodeURIComponent(paramValue)}`);
+      }
+    }
+
+    return queryParams.join("&");
+  }
+
   useEffect(() => {
-    fetchAllStudentCourses();
+    const buildQueryStringForFilters = createSearchParamsHelper(filters);
+    setSearchParams(new URLSearchParams(buildQueryStringForFilters));
+  }, [filters]);
+
+  useEffect(() => {
+    setSort("price-lowtohigh");
+    setFilters(JSON.parse(sessionStorage.getItem("filters")) || {});
+  }, []);
+
+  useEffect(() => {
+    if (filters !== null && sort !== null) {
+      fetchAllStudentCourses(filters, sort);
+    }
+  }, [filters, sort]);
+
+  useEffect(() => {
+    return () => {
+      sessionStorage.removeItem("filters");
+    };
   }, []);
 
   return (
@@ -37,10 +108,10 @@ function StudentCoursesViewPage() {
       <h1 className="text-3xl font-bold mb-4">All Courses</h1>
       <div className="flex flex-col md:flex-row gap-4">
         <aside className="w-full md:w-64 space-y-4">
-          <div className="p-4 space-y-4">
-            <div className=" space-y-4">
+          <div className="p-4">
+            <div className="space-y-4">
               {Object.keys(filterOptions).map((keyItem, index) => (
-                <div className="p-4 space-y-4" key={index}>
+                <div className="p-4 border rounded-lg shadow-lg" key={index}>
                   <h3 className="font-bold mb-3">
                     {keyItem.charAt(0).toUpperCase() + keyItem.slice(1)}
                   </h3>
@@ -51,10 +122,15 @@ function StudentCoursesViewPage() {
                         key={option.id}
                       >
                         <Checkbox
-                          checked={false}
-                          //   onCheckedChange={() =>
-                          //     handleFilterOnChange(keyItem, option.id)
-                          //   }
+                          checked={
+                            filters &&
+                            Object.keys(filters).length > 0 &&
+                            filters[keyItem] &&
+                            filters[keyItem].indexOf(option.id) > -1
+                          }
+                          onCheckedChange={() =>
+                            handleFilterOnChange(keyItem, option)
+                          }
                         />
                         {option.label}
                       </Label>
@@ -96,13 +172,23 @@ function StudentCoursesViewPage() {
               </DropdownMenuTrigger>
             </DropdownMenu>
             <span className="text-sm text-gray-600 font-bold">
-              10 Result Found
+              {studentCourses.length} Result Found
             </span>
           </div>
+
           <div className="space-y-4">
             {studentCourses && studentCourses.length > 0 ? (
               studentCourses.map((course) => (
-                <Card key={course._id} className="cursor-pointer">
+                <Card
+                  key={course._id}
+                  className="cursor-pointer"
+                  onClick={() => {
+                    console.log("course?._id: ", course?._id);
+                    const currentCourseId = course._id; // Directly capture the ID
+                    console.log("CurrentId: ", currentCourseId);
+                    navigate(`/course/details/${currentCourseId}`);
+                  }}
+                >
                   <CardContent className="flex gap-4 p-4">
                     <div className="w-48 h-32 flex-shrink-0">
                       <img
@@ -137,7 +223,17 @@ function StudentCoursesViewPage() {
                 </Card>
               ))
             ) : (
-              <h1>No Courses Found</h1>
+              <>
+                {loadingState ? (
+                  <Skeleton className="h-96" />
+                ) : (
+                  <div className="h-screen w-full flex justify-center items-center">
+                    <h1 className="font-extrabold text-4xl ">
+                      No Courses Found
+                    </h1>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </main>

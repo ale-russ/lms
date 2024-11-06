@@ -113,9 +113,9 @@ export async function updateCourseService(id, formData) {
   }
 }
 
-export async function fetchAllStudentCoursesService() {
+export async function fetchAllStudentCoursesService(query) {
   try {
-    const { data } = await axiosInstance.get(`/student/courses/get`);
+    const { data } = await axiosInstance.get(`/student/courses/get?${query}`);
     return data;
   } catch (error) {
     console.log(error);
