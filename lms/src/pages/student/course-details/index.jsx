@@ -1,5 +1,10 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import {
+  Navigate,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 
 import { StudentContext } from "@/context/student-context";
 import {
@@ -21,7 +26,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { AuthContext } from "@/context/auth-context";
-import { ErrorToast, useErrorToast } from "@/components/toasts/error-toast";
 
 function StudentCourseDetailsPage() {
   const {
@@ -33,31 +37,38 @@ function StudentCourseDetailsPage() {
     setLoadingState,
   } = useContext(StudentContext);
 
+  const navigate = useNavigate();
+
   const { auth } = useContext(AuthContext);
-  const [initialLoadingState, setInitialLoadingState] = useState(true);
+
   const [displayCurrentVideoFreePreview, setDisplayCurrentVideoFreePreview] =
     useState(null);
   const [showFreePreviewDialog, setShowFreePreviewDialog] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState({
-    title: "",
-    description: "",
-    tryAgin: false,
-  });
-
-  const showErrorToast = useErrorToast();
+  const [purchasedCourseId, setPurchasedCourseId] = useState(null);
 
   const params = useParams();
   const location = useLocation();
 
-  async function fetchStudentCourseDetails(id) {
-    setLoadingState(true);
+  async function fetchStudentCourseDetails(courseId) {
     try {
-      const response = await fetchStudentCourseDetailsService(id);
-      if (response?.success) {
-        setStudentCourseDetails(response?.data);
+      setLoadingState(true);
+      const response = await fetchStudentCourseDetailsService(
+        courseId,
+        auth?.user?._id
+      );
+
+      if (response?.success && response?.purchasedCourseId) {
+        setPurchasedCourseId(response?.purchasedCourseId);
+        navigate(`/course-progress/${response.purchasedCourseId}`, {
+          replace: true,
+        });
+        return;
       }
-    } catch (error) {
+
+      // Only set course details if course is not purchased
+      setCurrentCourseDetailsId(courseId);
+      setStudentCourseDetails(response?.data);
+    } catch (err) {
       setStudentCourseDetails(null);
     } finally {
       setTimeout(() => setLoadingState(false), 300);
@@ -79,8 +90,8 @@ function StudentCourseDetailsPage() {
       orderDate: new Date(),
       paymentId: "",
       payerId: "",
-      instructorId: studentCourseDetails.instructorId,
-      instructorName: studentCourseDetails.instructorName,
+      instructorId: studentCourseDetails?.instructorId,
+      instructorName: studentCourseDetails?.instructorName,
       courseId: studentCourseDetails?._id,
       courseTitle: studentCourseDetails?.title,
       coursePricing: `${studentCourseDetails?.pricing}`,
@@ -107,37 +118,9 @@ function StudentCourseDetailsPage() {
   }
 
   useEffect(() => {
-    if (displayCurrentVideoFreePreview !== null) setShowFreePreviewDialog(true);
-  }, [displayCurrentVideoFreePreview]);
-
-  // useEffect(() => {
-  //   if (params?.id && params.id !== currentCourseDetailsId) {
-  //     setCurrentCourseDetailsId(params?.id);
-  //     fetchStudentCourseDetails(params?.id)
-  //       .then(() => {
-  //         setInitialLoadingState(false);
-  //       })
-  //       .catch((_) => {
-  //         setStudentCourseDetails(null);
-  //         setInitialLoadingState(false);
-  //       });
-  //   }
-  // }, [params.id]);
-  useEffect(() => {
-    if (params?.id) {
-      setLoadingState(true); // Start loading state
-      setCurrentCourseDetailsId(params.id); // Update course ID state
-      setStudentCourseDetails(null); // Clear previous details
-
-      fetchStudentCourseDetails(params.id)
-        .then(() => {
-          setInitialLoadingState(false); // Finish initial loading
-        })
-        .catch((_) => {
-          setStudentCourseDetails(null); // Handle error by clearing details
-          setInitialLoadingState(false); // Stop initial loading
-        })
-        .finally(() => setLoadingState(false)); // Ensure loading state stops
+    if (params?.id && params.id !== currentCourseDetailsId) {
+      setCurrentCourseDetailsId(params.id);
+      fetchStudentCourseDetails(params.id);
     }
   }, [params.id]);
 
@@ -148,19 +131,20 @@ function StudentCourseDetailsPage() {
     }
   }, [location.pathname]);
 
+  useEffect(() => {
+    if (displayCurrentVideoFreePreview !== null) setShowFreePreviewDialog(true);
+  }, [displayCurrentVideoFreePreview]);
+
   const getIndexOfFreePreviewUrl =
     studentCourseDetails !== null
       ? studentCourseDetails?.curriculum?.findIndex((item) => item.freePreview)
       : -1;
 
-  if (initialLoadingState) {
-    return <Loader />;
-  }
+  if (loadingState || !studentCourseDetails) return <Loader />;
 
-  if (loadingState || !studentCourseDetails) {
-    return <Loader />;
+  if (purchasedCourseId !== null) {
+    return <Navigate to={`/course-progress/${purchasedCourseId}`} replace />;
   }
-
   return (
     <div className="w-full mx-auto p-4">
       <div className="bg-gray-900 text-white p-8 rounded-t-lg">
@@ -341,11 +325,11 @@ function StudentCourseDetailsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <ErrorToast
+      {/* <ErrorToast
         title={showErrorToast.title}
         description={showErrorToast.description}
         action={{ text: "", onClick: () => {} }}
-      />
+      /> */}
     </div>
   );
 }

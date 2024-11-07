@@ -8,6 +8,6 @@ const {
 const router = express.Router();
 
 router.get("/get", getAllStudentCourses);
-router.get("/get/details/:id", getStudentCourseDetails);
+router.get("/get/details/:courseId/:studentId", getStudentCourseDetails);
 
 module.exports = router;

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
@@ -14,72 +14,24 @@ import { filterOptions, sortOptions } from "@/config";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { StudentContext } from "@/context/student-context";
-import { fetchAllStudentCoursesService } from "@/services";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import Loader from "@/components/loader";
 
 function StudentCoursesViewPage() {
   const navigate = useNavigate();
   const [searchParam, setSearchParams] = useSearchParams();
-  const [sort, setSort] = useState("price-lowtohigh");
-  const [filters, setFilters] = useState({});
-  const { studentCourses, setStudentCourses, loadingState, setLoadingState } =
-    useContext(StudentContext);
 
-  async function fetchAllStudentCourses(filters, sort) {
-    const query = new URLSearchParams({
-      ...filters,
-      sortBy: sort,
-    });
-    try {
-      setLoadingState(true);
-      const response = await fetchAllStudentCoursesService(query);
-
-      if (response?.success) {
-        setStudentCourses(response?.data);
-      }
-    } catch (error) {
-      console.log("Error: ", error);
-    } finally {
-      setLoadingState(false);
-    }
-  }
-
-  function handleFilterOnChange(getSectionId, getCurrentOption) {
-    let cpyFilters = { ...filters };
-    const indexOfCurrentSection = Object.keys(cpyFilters).indexOf(getSectionId);
-
-    if (indexOfCurrentSection === -1) {
-      cpyFilters = {
-        ...cpyFilters,
-        [getSectionId]: [getCurrentOption.id],
-      };
-    } else {
-      const indexOfCurrentOption = cpyFilters[getSectionId].indexOf(
-        getCurrentOption.id
-      );
-
-      if (indexOfCurrentOption === -1)
-        cpyFilters[getSectionId].push(getCurrentOption.id);
-      else cpyFilters[getSectionId].splice(indexOfCurrentOption, 1);
-    }
-
-    setFilters(cpyFilters);
-    sessionStorage.setItem("filters", JSON.stringify(cpyFilters));
-  }
-
-  function createSearchParamsHelper(filtersParams) {
-    const queryParams = [];
-
-    for (const [key, value] of Object.entries(filtersParams)) {
-      if (Array.isArray(value) && value.length > 0) {
-        const paramValue = value.join(",");
-        queryParams.push(`${key}=${encodeURIComponent(paramValue)}`);
-      }
-    }
-
-    return queryParams.join("&");
-  }
+  const {
+    studentCourses,
+    loadingState,
+    sort,
+    setSort,
+    filters,
+    setFilters,
+    fetchAllFilteredStudentCourses,
+    handleFilterOnChange,
+    createSearchParamsHelper,
+  } = useContext(StudentContext);
 
   useEffect(() => {
     const buildQueryStringForFilters = createSearchParamsHelper(filters);
@@ -93,7 +45,7 @@ function StudentCoursesViewPage() {
 
   useEffect(() => {
     if (filters !== null && sort !== null) {
-      fetchAllStudentCourses(filters, sort);
+      fetchAllFilteredStudentCourses(filters, sort);
     }
   }, [filters, sort]);
 
@@ -104,7 +56,7 @@ function StudentCoursesViewPage() {
   }, []);
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto w-full p-4 ">
       <h1 className="text-3xl font-bold mb-4">All Courses</h1>
       <div className="flex flex-col md:flex-row gap-4">
         <aside className="w-full md:w-64 space-y-4">
@@ -115,7 +67,7 @@ function StudentCoursesViewPage() {
                   <h3 className="font-bold mb-3">
                     {keyItem.charAt(0).toUpperCase() + keyItem.slice(1)}
                   </h3>
-                  <div className="grid gap-2 mt-2">
+                  <div className="grid grid-cols-2 md:grid-cols-1 gap-2 mt-2">
                     {filterOptions[keyItem].map((option) => (
                       <Label
                         className="flex font-medium items-center gap-3"
@@ -143,7 +95,7 @@ function StudentCoursesViewPage() {
         </aside>
 
         <main className="flex-1">
-          <div className="flex justify-end items-center mb-4 gap-5">
+          <div className="flex justify-center md:justify-end items-center mb-4 gap-5">
             <DropdownMenu>
               <DropdownMenuTrigger>
                 <Button
@@ -183,14 +135,12 @@ function StudentCoursesViewPage() {
                   key={course._id}
                   className="cursor-pointer"
                   onClick={() => {
-                    console.log("course?._id: ", course?._id);
-                    const currentCourseId = course._id; // Directly capture the ID
-                    console.log("CurrentId: ", currentCourseId);
+                    const currentCourseId = course._id;
                     navigate(`/course/details/${currentCourseId}`);
                   }}
                 >
-                  <CardContent className="flex gap-4 p-4">
-                    <div className="w-48 h-32 flex-shrink-0">
+                  <CardContent className="flex flex-col md:flex-row gap-4 p-4">
+                    <div className="w-full md:w-48 h-32 flex-shrink-0 ">
                       <img
                         src={course?.image?.secure_url}
                         alt={course?.image.public_id}
@@ -225,7 +175,7 @@ function StudentCoursesViewPage() {
             ) : (
               <>
                 {loadingState ? (
-                  <Skeleton className="h-96" />
+                  <Loader />
                 ) : (
                   <div className="h-screen w-full flex justify-center items-center">
                     <h1 className="font-extrabold text-4xl ">

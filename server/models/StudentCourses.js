@@ -4,8 +4,8 @@ const StudentCoursesSchema = new mongoose.Schema({
   userId: String,
   courses: [
     {
-      courseId: String,
-      courseTitle: String,
+      courseId: { type: String, required: true },
+      title: String,
       instructorId: String,
       instructorName: String,
       dateOfPurchase: Date,

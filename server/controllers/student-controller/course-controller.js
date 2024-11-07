@@ -1,4 +1,5 @@
 const Course = require("../../models/Course");
+const StudentCourses = require("../../models/StudentCourses");
 
 const getAllStudentCourses = async (req, res) => {
   try {
@@ -41,11 +42,6 @@ const getAllStudentCourses = async (req, res) => {
 
     const courses = await Course.find(filters).sort(sortParams);
 
-    // if (courses.length === 0)
-    //   return res
-    //     .status(400)
-    //     .json({ success: false, message: "No Course Found", data: [] });
-
     return res.status(200).json({ success: true, data: courses });
   } catch (err) {
     console.log("Error: ", err);
@@ -56,7 +52,8 @@ const getAllStudentCourses = async (req, res) => {
 };
 const getStudentCourseDetails = async (req, res) => {
   try {
-    const courseId = req.params.id;
+    const { courseId, studentId } = req.params;
+
     const courseDetails = await Course.findById(courseId);
     if (!courseDetails)
       return res.status(400).json({
@@ -65,7 +62,20 @@ const getStudentCourseDetails = async (req, res) => {
         data: null,
       });
 
-    return res.status(200).json({ success: true, data: courseDetails });
+    // Check if the current student purchased this course or not
+    const studentCourses = await StudentCourses.findOne({ userId: studentId });
+
+    const ifStudentAlreadyBoughtCourse =
+      studentCourses.courses.findIndex((item) => item.courseId === courseId) >
+      -1;
+
+    console.log("course already bought: ", ifStudentAlreadyBoughtCourse);
+
+    return res.status(200).json({
+      success: true,
+      data: courseDetails,
+      purchasedCourseId: ifStudentAlreadyBoughtCourse ? courseId : null,
+    });
   } catch (err) {
     console.log("Error: ", err);
     return res

@@ -74,10 +74,7 @@ router.post("/bulk-upload", upload.array("files", 5), async (req, res) => {
       uploadMedia(fileItem.path)
     );
 
-    console.log("uploadPromise: ", uploadPromise);
-
     const results = await Promise.all(uploadPromise);
-    console.log("Result: ", results);
     // Delete the uploaded files from the server
     req.files.forEach((fileItem) =>
       fs.unlink(fileItem.path, (err) => {

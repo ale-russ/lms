@@ -122,10 +122,11 @@ export async function fetchAllStudentCoursesService(query) {
   }
 }
 
-export async function fetchStudentCourseDetailsService(courseId) {
+export async function fetchStudentCourseDetailsService(id, studentId) {
+  console.log("in course details service", id, " ", studentId);
   try {
     const { data } = await axiosInstance.get(
-      `/student/courses/get/details/${courseId}`
+      `/student/courses/get/details/${id}/${studentId}`
     );
     return data;
   } catch (error) {
