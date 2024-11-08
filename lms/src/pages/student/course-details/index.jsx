@@ -8,6 +8,7 @@ import {
 
 import { StudentContext } from "@/context/student-context";
 import {
+  checkCoursePurchaseInfoService,
   createPaymentService,
   fetchStudentCourseDetailsService,
 } from "@/services";
@@ -28,6 +29,9 @@ import {
 import { AuthContext } from "@/context/auth-context";
 
 function StudentCourseDetailsPage() {
+  const navigate = useNavigate();
+  const params = useParams();
+  const location = useLocation();
   const {
     studentCourseDetails,
     setStudentCourseDetails,
@@ -37,33 +41,30 @@ function StudentCourseDetailsPage() {
     setLoadingState,
   } = useContext(StudentContext);
 
-  const navigate = useNavigate();
-
   const { auth } = useContext(AuthContext);
 
   const [displayCurrentVideoFreePreview, setDisplayCurrentVideoFreePreview] =
     useState(null);
   const [showFreePreviewDialog, setShowFreePreviewDialog] = useState(false);
-  const [purchasedCourseId, setPurchasedCourseId] = useState(null);
-
-  const params = useParams();
-  const location = useLocation();
+  const [isCoursePurchased, setIsCoursePurchased] = useState(false);
 
   async function fetchStudentCourseDetails(courseId) {
+    setLoadingState(true);
     try {
-      setLoadingState(true);
-      const response = await fetchStudentCourseDetailsService(
+      const coursePurchaseStatus = await checkCoursePurchaseInfoService(
         courseId,
         auth?.user?._id
       );
 
-      if (response?.success && response?.purchasedCourseId) {
-        setPurchasedCourseId(response?.purchasedCourseId);
-        navigate(`/course-progress/${response.purchasedCourseId}`, {
-          replace: true,
-        });
+      setIsCoursePurchased(coursePurchaseStatus.data);
+      console.log("isCoursePurchased: ", isCoursePurchased);
+
+      if (coursePurchaseStatus?.success && coursePurchaseStatus.data) {
+        navigate(`/course-progress/${courseId}`, { replace: true });
         return;
       }
+
+      const response = await fetchStudentCourseDetailsService(courseId);
 
       // Only set course details if course is not purchased
       setCurrentCourseDetailsId(courseId);
@@ -128,6 +129,7 @@ function StudentCourseDetailsPage() {
     if (!location.pathname.includes("/course/details")) {
       setCurrentCourseDetailsId(null);
       setStudentCourseDetails(null);
+      // purchasedCourseId(null);
     }
   }, [location.pathname]);
 
@@ -142,9 +144,6 @@ function StudentCourseDetailsPage() {
 
   if (loadingState || !studentCourseDetails) return <Loader />;
 
-  if (purchasedCourseId !== null) {
-    return <Navigate to={`/course-progress/${purchasedCourseId}`} replace />;
-  }
   return (
     <div className="w-full mx-auto p-4">
       <div className="bg-gray-900 text-white p-8 rounded-t-lg">
@@ -270,7 +269,11 @@ function StudentCourseDetailsPage() {
                   ${studentCourseDetails?.pricing}
                 </span>
               </div>
-              <Button className="w-full" onClick={handleCreatePayment}>
+              <Button
+                disabled={isCoursePurchased}
+                className="w-full"
+                onClick={handleCreatePayment}
+              >
                 Buy Now
               </Button>
             </CardContent>

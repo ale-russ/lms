@@ -16,8 +16,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { StudentContext } from "@/context/student-context";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import Loader from "@/components/loader";
+import { AuthContext } from "@/context/auth-context";
+import { checkCoursePurchaseInfoService } from "@/services";
 
 function StudentCoursesViewPage() {
+  const { auth } = useContext(AuthContext);
   const navigate = useNavigate();
   const [searchParam, setSearchParams] = useSearchParams();
 
@@ -32,6 +35,21 @@ function StudentCoursesViewPage() {
     handleFilterOnChange,
     createSearchParamsHelper,
   } = useContext(StudentContext);
+
+  async function handleNavigateCourse(courseId) {
+    const response = await checkCoursePurchaseInfoService(
+      courseId,
+      auth?.user?._id
+    );
+    console.log("Response: ", response);
+    if (response?.success) {
+      if (response?.data) {
+        navigate(`/course-progress/${courseId}`, { replace: true });
+      } else {
+        navigate(`/course/details/${courseId}`);
+      }
+    }
+  }
 
   useEffect(() => {
     const buildQueryStringForFilters = createSearchParamsHelper(filters);
@@ -134,10 +152,7 @@ function StudentCoursesViewPage() {
                 <Card
                   key={course._id}
                   className="cursor-pointer"
-                  onClick={() => {
-                    const currentCourseId = course._id;
-                    navigate(`/course/details/${currentCourseId}`);
-                  }}
+                  onClick={() => handleNavigateCourse(course?._id)}
                 >
                   <CardContent className="flex flex-col md:flex-row gap-4 p-4">
                     <div className="w-full md:w-48 h-32 flex-shrink-0 ">

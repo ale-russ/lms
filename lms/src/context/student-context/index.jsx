@@ -9,6 +9,8 @@ export default function StudentProvider({ children }) {
   const [studentCourseDetails, setStudentCourseDetails] = useState(null);
   const [currentCourseDetailsId, setCurrentCourseDetailsId] = useState(null);
   const [studentBoughtCoursesList, setStudentBoughtCoursesList] = useState([]);
+  const [studentCurrentCourseProgress, setStudentCurrentCourseProgress] =
+    useState({});
 
   const [filters, setFilters] = useState({});
   const [sort, setSort] = useState("price-lowtohigh");
@@ -100,6 +102,8 @@ export default function StudentProvider({ children }) {
         setFilters,
         sort,
         setSort,
+        studentCurrentCourseProgress,
+        setStudentCurrentCourseProgress,
         fetchAllStudentCourses,
         handleFilterOnChange,
         createSearchParamsHelper,

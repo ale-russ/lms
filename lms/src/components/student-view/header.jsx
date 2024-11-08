@@ -1,11 +1,12 @@
 import React, { useContext } from "react";
 import { GraduationCap, TvMinimalPlay } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
-import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
 import { AuthContext } from "@/context/auth-context";
 
 function StudentHeader() {
+  const location = useLocation();
   const navigate = useNavigate();
   const { resetCredentials } = useContext(AuthContext);
   const handleLogout = () => {
@@ -24,7 +25,11 @@ function StudentHeader() {
           <Button
             variant="ghost"
             className="text-[14px] md:[16px] font-medium"
-            onClick={() => navigate("/courses")}
+            onClick={() => {
+              location.pathname.includes("/courses")
+                ? null
+                : navigate("/courses");
+            }}
           >
             Explore Courses
           </Button>

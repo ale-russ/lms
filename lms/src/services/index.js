@@ -122,11 +122,20 @@ export async function fetchAllStudentCoursesService(query) {
   }
 }
 
-export async function fetchStudentCourseDetailsService(id, studentId) {
-  console.log("in course details service", id, " ", studentId);
+export async function fetchStudentCourseDetailsService(id) {
   try {
     const { data } = await axiosInstance.get(
-      `/student/courses/get/details/${id}/${studentId}`
+      `/student/courses/get/details/${id}`
+    );
+    return data;
+  } catch (error) {
+    console.log(error);
+  }
+}
+export async function checkCoursePurchaseInfoService(courseId, studentId) {
+  try {
+    const { data } = await axiosInstance.get(
+      `/student/courses/purchase-info/${courseId}/${studentId}`
     );
     return data;
   } catch (error) {
@@ -169,6 +178,47 @@ export async function fetchStudentBoughtCoursesService(studentId) {
   try {
     const { data } = await axiosInstance.get(
       `/student/courses-bought/get/${studentId}`
+    );
+    return data;
+  } catch (err) {
+    console.log("Error: ", err);
+  }
+}
+export async function getCurrentStudentCourseProgressService(
+  studentId,
+  courseId
+) {
+  try {
+    const { data } = await axiosInstance.get(
+      `/student/course-progress/get/${studentId}/${courseId}`
+    );
+    return data;
+  } catch (err) {
+    console.log("Error: ", err);
+  }
+}
+
+export async function markCurrentLectureAsViewedService(
+  userId,
+  courseId,
+  lectureId
+) {
+  try {
+    const { data } = await axiosInstance.post(
+      `/student/course-progress/mark-lecture-viewed`,
+      { userId, courseId, lectureId }
+    );
+    return data;
+  } catch (err) {
+    console.log("Error: ", err);
+  }
+}
+
+export async function resetCurrentCourseProgressService(userId, courseId) {
+  try {
+    const { data } = await axiosInstance.post(
+      `/student/course-progress/reset-progress`,
+      { userId, courseId }
     );
     return data;
   } catch (err) {

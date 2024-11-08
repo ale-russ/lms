@@ -14,11 +14,17 @@ import {
 import { Slider } from "../ui/slider";
 import { Button } from "../ui/button";
 
-function VideoPlayer({ width = "100%", height = "100%", url }) {
+function VideoPlayer({
+  width = "100%",
+  height = "100%",
+  url,
+  onProgressUpdate,
+  progressData,
+}) {
   const [playing, setPlaying] = useState(false);
   const [volume, setVolume] = useState(0.5);
   const [muted, setMuted] = useState(false);
-  const [playedTime, setPlayedTime] = useState(0);
+  const [played, setPlayedTime] = useState(0);
   const [seeking, setSeeking] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
@@ -55,7 +61,7 @@ function VideoPlayer({ width = "100%", height = "100%", url }) {
   }
   function handleSeekMouseUp() {
     setSeeking(false);
-    playerRef.current.seekTo(playedTime);
+    playerRef.current.seekTo(played);
   }
 
   function handleVolumeChange(newVolume) {
@@ -104,6 +110,12 @@ function VideoPlayer({ width = "100%", height = "100%", url }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (played === 1) {
+      onProgressUpdate({ ...progressData, progressValue: played });
+    }
+  }, [played]);
+
   return (
     <div
       ref={playerContainerRef}
@@ -132,7 +144,7 @@ function VideoPlayer({ width = "100%", height = "100%", url }) {
           }`}
         >
           <Slider
-            value={[playedTime * 100]}
+            value={[played * 100]}
             max={100}
             step={0.1}
             onValueChange={(value) => handleSeekChange([value[0] / 100])}
@@ -191,9 +203,7 @@ function VideoPlayer({ width = "100%", height = "100%", url }) {
             </div>
             <div className="flex items-center space-x-2">
               <div className="text-white">
-                {formatTime(
-                  playedTime * (playerRef?.current?.getDuration() || 0)
-                )}{" "}
+                {formatTime(played * (playerRef?.current?.getDuration() || 0))}{" "}
                 / {formatTime(playerRef?.current?.getDuration() || 0)}
               </div>
               <Button
