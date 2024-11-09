@@ -5,7 +5,7 @@ export async function registerUser(formData) {
   try {
     await axiosInstance.post("/auth/register", formData);
   } catch (error) {
-    console.log("Error: ", error);
+    throw error?.response?.data?.message;
   }
 }
 
@@ -16,6 +16,7 @@ export async function loginUser(formData) {
     return data;
   } catch (error) {
     console.log("Error: ", error);
+    throw error?.response?.data?.message;
   }
 }
 
@@ -24,7 +25,7 @@ export async function checkAuthService() {
     const { data } = await axiosInstance.get("/auth/check-auth");
     return data;
   } catch (error) {
-    console.log("Error: ", error);
+    throw error?.response?.data?.message;
   }
 }
 
@@ -40,7 +41,7 @@ export async function mediaUploadService(formData, onProgressCallback) {
     });
     return data;
   } catch (error) {
-    console.log(error);
+    throw error?.response?.data?.message;
   }
 }
 export async function mediaBulkUploadService(formData, onProgressCallback) {
@@ -55,7 +56,7 @@ export async function mediaBulkUploadService(formData, onProgressCallback) {
     });
     return data;
   } catch (error) {
-    console.log(error);
+    throw error?.response?.data?.message;
   }
 }
 export async function mediaDeleteService(courseId, videoId, type = "image") {
@@ -65,7 +66,7 @@ export async function mediaDeleteService(courseId, videoId, type = "image") {
     });
     return data;
   } catch (error) {
-    console.log(error);
+    throw error?.response?.data?.message;
   }
 }
 
@@ -74,7 +75,7 @@ export async function fetchInstructorCoursesService() {
     const { data } = await axiosInstance.get(`/instructor/courses/get`, {});
     return data;
   } catch (error) {
-    console.log(error);
+    throw error?.response?.data?.message;
   }
 }
 
@@ -86,7 +87,7 @@ export async function addNewCoursesService(formData) {
     );
     return data;
   } catch (error) {
-    console.log(error);
+    throw error?.response?.data?.message;
   }
 }
 
@@ -97,7 +98,7 @@ export async function fetchInstructorCourseDetailsService(id) {
     );
     return data;
   } catch (error) {
-    console.log(error);
+    throw error?.response?.data?.message;
   }
 }
 
@@ -109,7 +110,7 @@ export async function updateCourseService(id, formData) {
     );
     return data;
   } catch (error) {
-    console.log(error);
+    throw error?.response?.data?.message;
   }
 }
 
@@ -118,7 +119,7 @@ export async function fetchAllStudentCoursesService(query) {
     const { data } = await axiosInstance.get(`/student/courses/get?${query}`);
     return data;
   } catch (error) {
-    console.log(error);
+    throw error?.response?.data?.message;
   }
 }
 
@@ -129,7 +130,7 @@ export async function fetchStudentCourseDetailsService(id) {
     );
     return data;
   } catch (error) {
-    console.log(error);
+    throw error?.response?.data?.message;
   }
 }
 export async function checkCoursePurchaseInfoService(courseId, studentId) {
@@ -139,7 +140,7 @@ export async function checkCoursePurchaseInfoService(courseId, studentId) {
     );
     return data;
   } catch (error) {
-    console.log(error);
+    throw error?.response?.data?.message;
   }
 }
 
@@ -153,7 +154,7 @@ export async function createPaymentService(paymentPayload) {
     return data;
   } catch (err) {
     console.log("Error create payments: ", err);
-    return err.response.data;
+    return err.response?.data;
   }
 }
 

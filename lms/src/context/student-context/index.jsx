@@ -1,9 +1,16 @@
-import { fetchAllStudentCoursesService } from "@/services";
-import { createContext, useState } from "react";
+import {
+  checkCoursePurchaseInfoService,
+  fetchAllStudentCoursesService,
+} from "@/services";
+import { createContext, useContext, useState } from "react";
+import { AuthContext } from "../auth-context";
+import { useNavigate } from "react-router-dom";
 
 export const StudentContext = createContext();
 
 export default function StudentProvider({ children }) {
+  const navigate = useNavigate();
+  const { auth } = useContext(AuthContext);
   const [loadingState, setLoadingState] = useState(false);
   const [studentCourses, setStudentCourses] = useState([]);
   const [studentCourseDetails, setStudentCourseDetails] = useState(null);
@@ -50,22 +57,35 @@ export default function StudentProvider({ children }) {
   }
 
   function handleFilterOnChange(getSectionId, getCurrentOption) {
+    console.log("getSectionId: ", getSectionId);
+    console.log("getCurrentOption: ", getCurrentOption);
+    console.log("filters: ", filters);
     let cpyFilters = { ...filters };
-    const indexOfCurrentSection = Object.keys(cpyFilters).indexOf(getSectionId);
-
-    if (indexOfCurrentSection === -1) {
-      cpyFilters = {
-        ...cpyFilters,
-        [getSectionId]: [getCurrentOption.id],
-      };
+    if (!cpyFilters[getSectionId]) {
+      // if section doesn't exist, create it with first option
+      cpyFilters[getSectionId] = [getCurrentOption.id];
     } else {
-      const indexOfCurrentOption = cpyFilters[getSectionId].indexOf(
+      // const indexOfCurrentSection =
+      //   Object.keys(cpyFilters).indexOf(getSectionId);
+      // console.log("indexOfCurrentSection: ", indexOfCurrentSection);
+      const indexOfCurrentSection = cpyFilters[getSectionId].indexOf(
         getCurrentOption.id
       );
 
-      if (indexOfCurrentOption === -1)
-        cpyFilters[getSectionId].push(getCurrentOption.id);
-      else cpyFilters[getSectionId].splice(indexOfCurrentOption, 1);
+      if (indexOfCurrentSection === -1) {
+        cpyFilters = {
+          ...cpyFilters,
+          [getSectionId]: [getCurrentOption.id],
+        };
+      } else {
+        const indexOfCurrentOption = cpyFilters[getSectionId].indexOf(
+          getCurrentOption.id
+        );
+
+        if (indexOfCurrentOption === -1)
+          cpyFilters[getSectionId].push(getCurrentOption.id);
+        else cpyFilters[getSectionId].splice(indexOfCurrentOption, 1);
+      }
     }
 
     setFilters(cpyFilters);
@@ -83,6 +103,20 @@ export default function StudentProvider({ children }) {
     }
 
     return queryParams.join("&");
+  }
+
+  async function handleNavigateCourse(courseId) {
+    const response = await checkCoursePurchaseInfoService(
+      courseId,
+      auth?.user?._id
+    );
+    if (response?.success) {
+      if (response?.data) {
+        navigate(`/course-progress/${courseId}`, { replace: true });
+      } else {
+        navigate(`/course/details/${courseId}`);
+      }
+    }
   }
 
   return (
@@ -108,6 +142,7 @@ export default function StudentProvider({ children }) {
         handleFilterOnChange,
         createSearchParamsHelper,
         fetchAllFilteredStudentCourses,
+        handleNavigateCourse,
       }}
     >
       {children}

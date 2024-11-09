@@ -209,7 +209,6 @@ function VideoPlayer({
               <Button
                 variant="ghost"
                 size="icon"
-                // onClick={() => setIsFullScreen(!isFullScreen)}
                 onClick={handleFullScreen}
                 className="text-white bg-transparent hover:text-white hover:bg-gray-700"
               >

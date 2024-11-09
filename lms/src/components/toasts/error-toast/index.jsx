@@ -1,44 +1,27 @@
-import { useState, useCallback } from "react";
-
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
+import { useContext, useEffect } from "react";
+import { AuthContext } from "@/context/auth-context";
 
-export function useErrorToast() {
+export function ErrorToast() {
   const { toast } = useToast();
-  const [isVisible, setIsVisible] = useState(false);
+  const { showError, setShowError, toastType } = useContext(AuthContext);
 
-  const showErrorToast = useCallback(
-    ({ title, description, action }) => {
-      if (!isVisible) {
-        setIsVisible(true);
-        toast({
-          variant: "destructive",
-          title: title,
-          description: description,
-          action: action ? (
-            <ToastAction altText="Try again">{action.text}</ToastAction>
-          ) : null,
-          onOpenChange: (open) => {
-            if (!open) setIsVisible(false);
-          },
-        });
-      }
-    },
-    [toast, isVisible]
-  );
+  console.log("ShowError in hook: ", showError);
+  console.log("Error Type: ", toastType);
 
-  return showErrorToast;
-}
+  useEffect(() => {
+    toast({
+      variant: toastType,
+      title: showError.title,
+      description: showError.description,
+      // action: <ToastAction altText="Try again">Try again</ToastAction>,
+    });
+    // setTimeout(
+    //   () => setShowError({ title: "", description: "", show: false }),
+    //   5000
+    // );
+  }, [showError, toast, toastType, setShowError]);
 
-export function ErrorToast({ title, description, action }) {
-  const showErrorToast = useErrorToast();
-
-  return (
-    <button
-      className="sr-only"
-      onClick={() => showErrorToast({ title, description, action })}
-    >
-      Show Error Toast
-    </button>
-  );
+  return;
 }

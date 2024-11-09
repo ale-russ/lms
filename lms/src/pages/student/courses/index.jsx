@@ -41,7 +41,6 @@ function StudentCoursesViewPage() {
       courseId,
       auth?.user?._id
     );
-    console.log("Response: ", response);
     if (response?.success) {
       if (response?.data) {
         navigate(`/course-progress/${courseId}`, { replace: true });

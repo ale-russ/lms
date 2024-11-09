@@ -59,7 +59,9 @@ const InstructorCourses = ({ courses }) => {
                     <TableRow key={course._id}>
                       <TableCell>{course?.title}</TableCell>
                       <TableCell>{course?.students.length}</TableCell>
-                      <TableCell>${course?.pricing}</TableCell>
+                      <TableCell>
+                        ${course?.students?.length * course?.pricing}
+                      </TableCell>
                       <TableCell className="text-right space-x-2">
                         <Button
                           variant="ghost"

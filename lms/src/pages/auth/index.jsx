@@ -6,6 +6,7 @@ import CommonForm from "@/components/common-form";
 import { emailRegex, signInFormControls, signUpFormControls } from "@/config";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AuthContext } from "@/context/auth-context";
+import { ErrorToast } from "@/components/toasts/error-toast";
 
 const AuthPage = () => {
   const [activeTab, setActiveTab] = useState("signin");
@@ -17,6 +18,7 @@ const AuthPage = () => {
     handleRegisterUser,
     handleLoginUser,
     loading,
+    showError,
   } = useContext(AuthContext);
 
   function handleTabChange(value) {
@@ -99,6 +101,8 @@ const AuthPage = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <ErrorToast />
     </div>
   );
 };

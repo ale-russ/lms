@@ -57,7 +57,6 @@ function StudentCourseDetailsPage() {
       );
 
       setIsCoursePurchased(coursePurchaseStatus.data);
-      console.log("isCoursePurchased: ", isCoursePurchased);
 
       if (coursePurchaseStatus?.success && coursePurchaseStatus.data) {
         navigate(`/course-progress/${courseId}`, { replace: true });
@@ -110,11 +109,11 @@ function StudentCourseDetailsPage() {
       window.location.replace(response?.data?.approvalUrl);
     } else {
       console.log("Error response: ", response);
-      showErrorToast({
-        title: "Payment Error",
-        description: response?.message,
-        tryAgin: false,
-      });
+      // showErrorToast({
+      //   title: "Payment Error",
+      //   description: response?.message,
+      //   tryAgin: false,
+      // });
     }
   }
 

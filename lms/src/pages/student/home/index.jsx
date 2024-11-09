@@ -6,10 +6,29 @@ import { Button } from "@/components/ui/button";
 import { StudentContext } from "@/context/student-context";
 import Loader from "@/components/loader";
 import { Card, CardContent } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "@/context/auth-context";
 
 const StudentHomePage = () => {
-  const { studentCourses, fetchAllStudentCourses, studentDataLoading } =
-    useContext(StudentContext);
+  const navigate = useNavigate();
+  const {
+    studentCourses,
+    fetchAllStudentCourses,
+    studentDataLoading,
+    handleNavigateCourse,
+  } = useContext(StudentContext);
+
+  function handleNavigateToCoursesPage(categoryId) {
+    console.log(categoryId);
+    sessionStorage.removeItem("filters");
+    const currentFilter = {
+      category: [categoryId],
+    };
+
+    sessionStorage.setItem("filters", JSON.stringify(currentFilter));
+
+    navigate("/courses");
+  }
 
   useEffect(() => {
     fetchAllStudentCourses();
@@ -50,6 +69,7 @@ const StudentHomePage = () => {
                   className="justify-start"
                   variant="outline"
                   key={category.id}
+                  onClick={() => handleNavigateToCoursesPage(category?.id)}
                 >
                   {category.label}
                 </Button>
@@ -66,6 +86,7 @@ const StudentHomePage = () => {
                   <Card
                     key={course?._id}
                     className="border rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => handleNavigateCourse(course?._id)}
                   >
                     <CardContent className="p-4 flex-grow">
                       <img
@@ -73,17 +94,6 @@ const StudentHomePage = () => {
                         alt="Course"
                         className="w-full h-32 sm:h-40 md:h-52 object-cover rounded-md mb-3 md:mb-4"
                       />
-                      {/* <div className="p-2 md:p-4">
-                        <h3 className="font-bold mb-1 truncate">
-                          {course?.title}
-                        </h3>
-                        <p className="text-sm text-gray-700 mb-2 capitalize font-semibold">
-                          {course?.instructorName}
-                        </p>
-                        <p className="font-bold text-[16px]">
-                          ${course?.pricing}
-                        </p>
-                      </div> */}
                       <div className="p-2">
                         <h3 className="font-bold mb-1 text-sm md:text-base truncate">
                           {course?.title}

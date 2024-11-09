@@ -10,6 +10,12 @@ export const AuthContext = createContext(null);
 export default function AuthProvider({ children }) {
   const [signInFormData, setSignInFormData] = useState(initialSignInFormData);
   const [signUpFormData, setSignUpFormData] = useState(initialSignUpFormData);
+  const [showError, setShowError] = useState({
+    title: "",
+    description: "",
+    show: false,
+  });
+  const [toastType, setToastType] = useState("");
   const [auth, setAuth] = useState({
     authenticate: false,
     user: null,
@@ -23,6 +29,12 @@ export default function AuthProvider({ children }) {
       await registerUser(signUpFormData);
     } catch (err) {
       console.log("Error: ", err);
+      setShowError({
+        title: "Login Error",
+        description: err,
+        show: true,
+      });
+      setToastType("destructive");
     } finally {
       setSignUpFormData(initialSignUpFormData);
       setLoading(false);
@@ -32,6 +44,7 @@ export default function AuthProvider({ children }) {
   async function handleLoginUser(e) {
     e.preventDefault();
     setLoading(true);
+
     try {
       const data = await loginUser(signInFormData);
       if (data?.success) {
@@ -44,6 +57,13 @@ export default function AuthProvider({ children }) {
         setAuth({ authenticate: false, user: null });
       }
     } catch (err) {
+      console.log("Error in login: ", err);
+      setShowError({
+        title: "Login Error",
+        description: err,
+        show: true,
+      });
+      setToastType("destructive");
       setAuth({ authenticate: false, user: null });
     } finally {
       setSignInFormData(initialSignInFormData);
@@ -62,8 +82,6 @@ export default function AuthProvider({ children }) {
         setAuth({ authenticate: false, user: null });
       }
     } catch (error) {
-      // console.log("Error: ", error);
-
       setAuth({ authenticate: false, user: null });
     } finally {
       setLoading(false);
@@ -89,6 +107,11 @@ export default function AuthProvider({ children }) {
         signUpFormData,
         setSignInFormData,
         setSignUpFormData,
+        showError,
+        setShowError,
+        toastType,
+        setToastType,
+        loading,
         handleRegisterUser,
         handleLoginUser,
         auth,

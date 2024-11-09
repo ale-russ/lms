@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Play } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { StudentContext } from "@/context/student-context";
 import {
   getCurrentStudentCourseProgressService,
   markCurrentLectureAsViewedService,
+  resetCurrentCourseProgressService,
 } from "@/services";
 import {
   Dialog,
@@ -41,27 +42,6 @@ function StudentCourseProgressPage() {
         courseId
       );
 
-      console.log("Response: ", response);
-      // if (response?.success) {
-      //   if (!response?.data?.isPurchased) {
-      //     setLockCourse(true);
-      //   } else {
-      //     setStudentCurrentCourseProgress({
-      //       courseDetails: response?.data?.courseDetails,
-      //       progress: response?.data?.progress,
-      //     });
-      //     if (response?.data?.completed) {
-      //       setCurrentLecture(response?.data?.courseDetails?.curriculum[0]);
-      //       setShowCourseCompleteDialog(true);
-      //       setShowConfetti(true);
-
-      //       return;
-      //     }
-
-      //     if (response?.data?.progress?.length === 0) {
-      //       setCurrentLecture(response?.data?.courseDetails?.curriculum[0]);
-      //       return;
-      //     }
       if (!response?.data?.isPurchased) {
         setLockCourse(true);
       } else {
@@ -82,7 +62,18 @@ function StudentCourseProgressPage() {
           setCurrentLecture(response?.data?.courseDetails?.curriculum[0]);
         } else {
           // for later
-          console.log("for later use");
+          const lastIndexOfViewedAsTrue = response?.data?.progress?.reduceRight(
+            (acc, obj, index) => {
+              return acc === -1 && obj.viewed ? index : acc;
+            },
+            -1
+          );
+
+          setCurrentLecture(
+            response?.data?.courseDetails?.curriculum[
+              lastIndexOfViewedAsTrue + 1
+            ]
+          );
         }
       }
     } catch (error) {
@@ -98,11 +89,23 @@ function StudentCourseProgressPage() {
         currentLecture?._id
       );
 
-      console.log("Response: ", response);
-
       if (response?.success) {
         fetchCurrentCourseProgress();
       }
+    }
+  }
+
+  async function handleRewatchCourse() {
+    const response = await resetCurrentCourseProgressService(
+      auth?.user?._id,
+      courseId
+    );
+
+    if (response?.success) {
+      setCurrentLecture(null);
+      setShowConfetti(false);
+      setShowCourseCompleteDialog(false);
+      fetchCurrentCourseProgress();
     }
   }
 
@@ -111,16 +114,12 @@ function StudentCourseProgressPage() {
   }, []);
 
   useEffect(() => {
-    console.log("progressValue: ", currentLecture?.progressValue === 1);
-
     if (currentLecture?.progressValue === 1) updateCourseProgress();
   }, [currentLecture]);
 
   useEffect(() => {
     if (showConfetti) setTimeout(() => setShowConfetti(false), 5000);
   }, [showConfetti]);
-
-  console.log("currentLecture: ", currentLecture);
 
   return (
     <div className="flex flex-col h-screen bg-[#1c1d1f] text-white">
@@ -149,11 +148,7 @@ function StudentCourseProgressPage() {
         </Button>
       </div>
       <div className="flex flex-1 overflow-hidden relative ">
-        <div
-          className={`flex-1 ${
-            isSideBarOpen ? "mr-[400px]" : ""
-          } transition-all duration-300`}
-        >
+        <div className={`w-full flex-1 mx-8 transition-all duration-300`}>
           <VideoPlayer
             width="100%"
             height="60%"
@@ -197,6 +192,14 @@ function StudentCourseProgressPage() {
                           key={curriculum?._id}
                           className="flex items-center space-x-2 text-sm text-white font-bold cursor-pointer"
                         >
+                          {studentCurrentCourseProgress?.progress?.find(
+                            (progressItem) =>
+                              progressItem?.lectureId === curriculum?._id
+                          )?.viewed ? (
+                            <Check className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <Play className="h-4 w-4 " />
+                          )}
                           <span>{curriculum?.title}</span>
                         </div>
                       );
@@ -219,7 +222,7 @@ function StudentCourseProgressPage() {
         </div>
       </div>
       <Dialog open={lockCourse}>
-        <DialogContent className="sm:w-[425px]">
+        <DialogContent showOverlay={false} className="sm:w-[425px]">
           <DialogHeader asChild>
             <DialogTitle>You Can't view This Page</DialogTitle>
             <DialogDescription>
@@ -237,8 +240,10 @@ function StudentCourseProgressPage() {
             <DialogDescription className="flex flex-col gap-3">
               <Label> You Have Completed The Course</Label>
               <div className="flex flex-row gap-3">
-                <Button>My Courses Page</Button>
-                <Button>Rewatch Course</Button>
+                <Button onClick={() => navigate("/student-courses")}>
+                  My Courses Page
+                </Button>
+                <Button onClick={handleRewatchCourse}>Rewatch Course</Button>
               </div>
             </DialogDescription>
           </DialogHeader>
