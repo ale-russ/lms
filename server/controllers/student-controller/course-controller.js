@@ -11,13 +11,13 @@ const getAllStudentCourses = async (req, res) => {
     } = req.query;
 
     let filters = {};
-    if (category.length) {
+    if (category?.length) {
       filters.category = { $in: category.split(",") };
     }
-    if (level.length) {
+    if (level?.length) {
       filters.level = { $in: level.split(",") };
     }
-    if (primaryLanguage.length) {
+    if (primaryLanguage?.length) {
       filters.primaryLanguage = { $in: primaryLanguage.split(",") };
     }
 
@@ -79,8 +79,9 @@ const checkCoursePurchasedInfo = async (req, res) => {
     const { courseId, studentId } = req.params;
     const studentCourses = await StudentCourses.findOne({ userId: studentId });
     const ifStudentAlreadyBoughtCourse =
-      studentCourses.courses.findIndex((item) => item?.courseId === courseId) >
-      -1;
+      studentCourses?.courses?.findIndex(
+        (item) => item?.courseId === courseId
+      ) > -1;
 
     return res
       .status(200)

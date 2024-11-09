@@ -19,7 +19,6 @@ const StudentHomePage = () => {
   } = useContext(StudentContext);
 
   function handleNavigateToCoursesPage(categoryId) {
-    console.log(categoryId);
     sessionStorage.removeItem("filters");
     const currentFilter = {
       category: [categoryId],

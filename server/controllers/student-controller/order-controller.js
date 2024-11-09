@@ -100,7 +100,7 @@ const createOrder = async (req, res) => {
 
       res.status(200).json({
         success: true,
-        data: { approvalUrl, orderId: newCourseOrder._id },
+        data: { approvalUrl, orderId: newCourseOrder?._id },
       });
     });
   } catch (err) {
@@ -156,12 +156,12 @@ const capturePaymentAndFinalizeOrder = async (req, res) => {
 
       // Update student courses using atomic operation
       const courseData = {
-        courseId: order.courseId,
-        title: order.courseTitle,
-        instructorId: order.instructorId,
-        instructorName: order.instructorName,
-        dateOfPurchase: order.orderDate,
-        courseImage: order.courseImage,
+        courseId: order?.courseId,
+        title: order?.courseTitle,
+        instructorId: order?.instructorId,
+        instructorName: order?.instructorName,
+        dateOfPurchase: order?.orderDate,
+        courseImage: order?.courseImage,
       };
 
       const studentCourseResult = await StudentCourses.updateOne(
@@ -183,10 +183,10 @@ const capturePaymentAndFinalizeOrder = async (req, res) => {
         {
           $addToSet: {
             students: {
-              studentId: order.userId,
-              studentName: order.userName,
-              studentEmail: order.userEmail,
-              paidAmount: order.coursePricing,
+              studentId: order?.userId,
+              studentName: order?.userName,
+              studentEmail: order?.userEmail,
+              paidAmount: order?.coursePricing,
             },
           },
         },

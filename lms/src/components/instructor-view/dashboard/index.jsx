@@ -54,8 +54,8 @@ const InstructorDashboard = ({ courses }) => {
   ];
 
   return (
-    <div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb8">
+    <>
+      <div className="grid grid-cols-2 gap-6 mb-8">
         {config.map((item, index) => (
           <Card key={index}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -92,9 +92,9 @@ const InstructorDashboard = ({ courses }) => {
                     <TableRow key={index}>
                       <TableCell>{student.studentName}</TableCell>
                       <TableCell>{student.studentEmail}</TableCell>
-                      <TableCell>{student.paidAmount}</TableCell>
+                      <TableCell>${student.paidAmount}</TableCell>
                       <TableCell>{student.courseTitle}</TableCell>
-                      <TableCell>{student.coursePricing}</TableCell>
+                      <TableCell>${student.coursePricing}</TableCell>
                     </TableRow>
                   )
                 )}
@@ -103,7 +103,7 @@ const InstructorDashboard = ({ courses }) => {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </>
   );
 };
 

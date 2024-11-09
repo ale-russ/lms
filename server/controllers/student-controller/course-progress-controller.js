@@ -82,7 +82,7 @@ const markCurrentLectureAsViewed = async (req, res) => {
       });
       await progress.save();
     } else {
-      const lecturesProgress = progress.lecturesProgress.find(
+      const lecturesProgress = progress?.lecturesProgress.find(
         (item) => item.lectureId === lectureId
       );
 
@@ -92,7 +92,7 @@ const markCurrentLectureAsViewed = async (req, res) => {
         lecturesProgress.viewed = true;
         lecturesProgress.dateViewed = new Date();
       } else {
-        progress.lecturesProgress.push({
+        progress?.lecturesProgress.push({
           lectureId,
           viewed: true,
           dateViewed: new Date(),
@@ -111,8 +111,8 @@ const markCurrentLectureAsViewed = async (req, res) => {
 
     // check if all lectures are viewed or not
     const allLecturesViewed =
-      progress.lecturesProgress.length === course.curriculum.length &&
-      progress.lecturesProgress.every((item) => item.viewed);
+      progress?.lecturesProgress.length === course.curriculum.length &&
+      progress?.lecturesProgress.every((item) => item.viewed);
 
     if (allLecturesViewed) {
       progress.completed = true;

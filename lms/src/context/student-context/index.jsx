@@ -57,35 +57,22 @@ export default function StudentProvider({ children }) {
   }
 
   function handleFilterOnChange(getSectionId, getCurrentOption) {
-    console.log("getSectionId: ", getSectionId);
-    console.log("getCurrentOption: ", getCurrentOption);
-    console.log("filters: ", filters);
     let cpyFilters = { ...filters };
-    if (!cpyFilters[getSectionId]) {
-      // if section doesn't exist, create it with first option
-      cpyFilters[getSectionId] = [getCurrentOption.id];
+    const indexOfCurrentSection = Object.keys(cpyFilters).indexOf(getSectionId);
+
+    if (indexOfCurrentSection === -1) {
+      cpyFilters = {
+        ...cpyFilters,
+        [getSectionId]: [getCurrentOption.id],
+      };
     } else {
-      // const indexOfCurrentSection =
-      //   Object.keys(cpyFilters).indexOf(getSectionId);
-      // console.log("indexOfCurrentSection: ", indexOfCurrentSection);
-      const indexOfCurrentSection = cpyFilters[getSectionId].indexOf(
+      const indexOfCurrentOption = cpyFilters[getSectionId].indexOf(
         getCurrentOption.id
       );
 
-      if (indexOfCurrentSection === -1) {
-        cpyFilters = {
-          ...cpyFilters,
-          [getSectionId]: [getCurrentOption.id],
-        };
-      } else {
-        const indexOfCurrentOption = cpyFilters[getSectionId].indexOf(
-          getCurrentOption.id
-        );
-
-        if (indexOfCurrentOption === -1)
-          cpyFilters[getSectionId].push(getCurrentOption.id);
-        else cpyFilters[getSectionId].splice(indexOfCurrentOption, 1);
-      }
+      if (indexOfCurrentOption === -1)
+        cpyFilters[getSectionId].push(getCurrentOption.id);
+      else cpyFilters[getSectionId].splice(indexOfCurrentOption, 1);
     }
 
     setFilters(cpyFilters);

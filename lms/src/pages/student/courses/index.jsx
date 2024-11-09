@@ -73,7 +73,7 @@ function StudentCoursesViewPage() {
   }, []);
 
   return (
-    <div className="container mx-auto w-full p-4 ">
+    <div className="container mx-auto w-full p-4 h-full">
       <h1 className="text-3xl font-bold mb-4">All Courses</h1>
       <div className="flex flex-col md:flex-row gap-4">
         <aside className="w-full md:w-64 space-y-4">
@@ -191,8 +191,8 @@ function StudentCoursesViewPage() {
                 {loadingState ? (
                   <Loader />
                 ) : (
-                  <div className="h-screen w-full flex justify-center items-center">
-                    <h1 className="font-extrabold text-4xl ">
+                  <div className="w-full flex justify-center items-center">
+                    <h1 className="font-extrabold text-4xl">
                       No Courses Found
                     </h1>
                   </div>
