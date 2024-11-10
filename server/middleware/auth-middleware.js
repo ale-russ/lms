@@ -12,7 +12,7 @@ const authenticate = (req, res, next) => {
     });
   }
 
-  const token = authHeader.split(" ")[1].replace(/^"|"$/g, "");
+  const token = authHeader?.split(" ")[1].replace(/^"|"$/g, "");
 
   try {
     const payload = verifyToken(token, `${process.env.JWT_SECRET}`);

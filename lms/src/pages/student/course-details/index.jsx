@@ -1,8 +1,17 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import {
+  Navigate,
+  useLocation,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 
 import { StudentContext } from "@/context/student-context";
-import { fetchStudentCourseDetailsService } from "@/services";
+import {
+  checkCoursePurchaseInfoService,
+  createPaymentService,
+  fetchStudentCourseDetailsService,
+} from "@/services";
 import { CheckCircle, Globe, Lock, PlayCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import VideoPlayer from "@/components/video-player";
@@ -17,8 +26,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { AuthContext } from "@/context/auth-context";
 
 function StudentCourseDetailsPage() {
+  const navigate = useNavigate();
+  const params = useParams();
+  const location = useLocation();
   const {
     studentCourseDetails,
     setStudentCourseDetails,
@@ -27,49 +40,87 @@ function StudentCourseDetailsPage() {
     loadingState,
     setLoadingState,
   } = useContext(StudentContext);
-  const [initialLoadingState, setInitialLoadingState] = useState(true);
+
+  const { auth } = useContext(AuthContext);
+
   const [displayCurrentVideoFreePreview, setDisplayCurrentVideoFreePreview] =
     useState(null);
   const [showFreePreviewDialog, setShowFreePreviewDialog] = useState(false);
+  const [isCoursePurchased, setIsCoursePurchased] = useState(false);
 
-  const params = useParams();
-  const location = useLocation();
-
-  async function fetchStudentCourseDetails(id) {
+  async function fetchStudentCourseDetails(courseId) {
     setLoadingState(true);
     try {
-      const response = await fetchStudentCourseDetailsService(id);
-      if (response?.success) {
-        setStudentCourseDetails(response?.data);
+      const coursePurchaseStatus = await checkCoursePurchaseInfoService(
+        courseId,
+        auth?.user?._id
+      );
+
+      setIsCoursePurchased(coursePurchaseStatus.data);
+
+      if (coursePurchaseStatus?.success && coursePurchaseStatus.data) {
+        navigate(`/course-progress/${courseId}`, { replace: true });
+        return;
       }
-    } catch (error) {
+
+      const response = await fetchStudentCourseDetailsService(courseId);
+
+      // Only set course details if course is not purchased
+      setCurrentCourseDetailsId(courseId);
+      setStudentCourseDetails(response?.data);
+    } catch (err) {
       setStudentCourseDetails(null);
     } finally {
-      // Add a brief delay to reduce flicker
       setTimeout(() => setLoadingState(false), 300);
     }
   }
 
   function handleSetFreePreview(item) {
-    console.log("item: ", item);
     setDisplayCurrentVideoFreePreview(item?.videoUrl);
   }
 
-  useEffect(() => {
-    if (displayCurrentVideoFreePreview !== null) setShowFreePreviewDialog(true);
-  }, [displayCurrentVideoFreePreview]);
+  async function handleCreatePayment() {
+    const paymentPayload = {
+      userId: auth?.user?._id,
+      userName: auth?.user?.userName,
+      userEmail: auth?.user?.userEmail,
+      orderStatus: "pending",
+      paymentMethods: "paypal",
+      paymentStatus: "initiated",
+      orderDate: new Date(),
+      paymentId: "",
+      payerId: "",
+      instructorId: studentCourseDetails?.instructorId,
+      instructorName: studentCourseDetails?.instructorName,
+      courseId: studentCourseDetails?._id,
+      courseTitle: studentCourseDetails?.title,
+      coursePricing: `${studentCourseDetails?.pricing}`,
+      courseImage: studentCourseDetails?.image?.url,
+    };
+
+    const response = await createPaymentService(paymentPayload);
+
+    if (response?.success) {
+      sessionStorage.setItem(
+        "currentOrderId",
+        JSON.stringify(response?.data?.orderId)
+      );
+
+      window.location.replace(response?.data?.approvalUrl);
+    } else {
+      console.log("Error response: ", response);
+      // showErrorToast({
+      //   title: "Payment Error",
+      //   description: response?.message,
+      //   tryAgin: false,
+      // });
+    }
+  }
 
   useEffect(() => {
     if (params?.id && params.id !== currentCourseDetailsId) {
-      setCurrentCourseDetailsId(params?.id);
-      fetchStudentCourseDetails(params?.id)
-        .then(() => {
-          setInitialLoadingState(false);
-        })
-        .catch((_) => {
-          setStudentCourseDetails(null);
-          setInitialLoadingState(false);
-        });
+      setCurrentCourseDetailsId(params.id);
+      fetchStudentCourseDetails(params.id);
     }
   }, [params.id]);
 
@@ -77,22 +128,20 @@ function StudentCourseDetailsPage() {
     if (!location.pathname.includes("/course/details")) {
       setCurrentCourseDetailsId(null);
       setStudentCourseDetails(null);
+      // purchasedCourseId(null);
     }
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (displayCurrentVideoFreePreview !== null) setShowFreePreviewDialog(true);
+  }, [displayCurrentVideoFreePreview]);
 
   const getIndexOfFreePreviewUrl =
     studentCourseDetails !== null
       ? studentCourseDetails?.curriculum?.findIndex((item) => item.freePreview)
       : -1;
 
-  if (initialLoadingState) {
-    return <Loader />;
-  }
-
-  if (loadingState || !studentCourseDetails) {
-    // return <Skeleton className="h-96" />;
-    return <Loader />;
-  }
+  if (loadingState || !studentCourseDetails) return <Loader />;
 
   return (
     <div className="w-full mx-auto p-4">
@@ -219,7 +268,13 @@ function StudentCourseDetailsPage() {
                   ${studentCourseDetails?.pricing}
                 </span>
               </div>
-              <Button className="w-full">Buy Now</Button>
+              <Button
+                disabled={isCoursePurchased}
+                className="w-full"
+                onClick={handleCreatePayment}
+              >
+                Buy Now
+              </Button>
             </CardContent>
           </Card>
         </aside>
@@ -272,6 +327,11 @@ function StudentCourseDetailsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {/* <ErrorToast
+        title={showErrorToast.title}
+        description={showErrorToast.description}
+        action={{ text: "", onClick: () => {} }}
+      /> */}
     </div>
   );
 }

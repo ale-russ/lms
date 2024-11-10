@@ -6,7 +6,10 @@ const mongoose = require("mongoose");
 const authRoutes = require("./routes/auth-routes/index");
 const mediaRoutes = require("./routes/instructor-routes/media-routes");
 const instructorCourseRoutes = require("./routes/instructor-routes/course-routes");
-const studentCourseRoutes = require("./routes/student-routes/student-routes");
+const studentCourseRoutes = require("./routes/student-routes/course-routes");
+const studentOrderRoutes = require("./routes/student-routes/order-routes");
+const studentCoursesByIdRoute = require("./routes/student-routes/student-courses-routes");
+const studentCourseProgressRoutes = require("./routes/student-routes/course-progress-routes");
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -32,6 +35,9 @@ app.use("/auth", authRoutes);
 app.use("/media", mediaRoutes);
 app.use("/instructor/courses", instructorCourseRoutes);
 app.use("/student/courses", studentCourseRoutes);
+app.use("/student/order", studentOrderRoutes);
+app.use("/student/courses-bought", studentCoursesByIdRoute);
+app.use("/student/course-progress", studentCourseProgressRoutes);
 
 app.use((err, req, res, next) => {
   console.log(`Error: `, err.stack);

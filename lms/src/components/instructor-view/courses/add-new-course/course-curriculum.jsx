@@ -139,11 +139,9 @@ const CourseCurriculum = () => {
   async function handleBulkUpload(event) {
     event.preventDefault();
     const selectedFiles = Array.from(event.target.files);
-    console.log("selectedFiles: ", selectedFiles);
 
     const bulkFormData = new FormData();
     selectedFiles.forEach((fileItem) => {
-      console.log("FileItem: ", fileItem);
       bulkFormData.append("files", fileItem);
     });
 
@@ -153,7 +151,7 @@ const CourseCurriculum = () => {
         bulkFormData,
         setMediaUploadPercentage
       );
-      console.log("Bulk upload: ", response);
+
       if (response?.success) {
         let cpyCourseCurriculumFormData = isCurriculumFormDataEmpty(
           courseCurriculumFormData
@@ -183,16 +181,14 @@ const CourseCurriculum = () => {
   }
 
   async function handleDeleteLecture(currentIndex) {
-    console.log("Current course id: ", currentEditedCourseId);
-    console.log("Index: ", currentIndex);
     let cpyCourseCurriculumFormData = [...courseCurriculumFormData];
-    console.log("data: ", cpyCourseCurriculumFormData[currentIndex]);
+
     const response = await mediaDeleteService(
       currentEditedCourseId,
       cpyCourseCurriculumFormData[currentIndex].public_id,
       "video"
     );
-    console.log("Response: ", response);
+
     if (response?.success) {
       cpyCourseCurriculumFormData = cpyCourseCurriculumFormData.filter(
         (_, index) => index !== currentIndex

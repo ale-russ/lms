@@ -29,9 +29,11 @@ const InstructorCourses = ({ courses }) => {
   return (
     <Card>
       <CardHeader className="flex justify-between flex-row items-center">
-        <CardTitle className="text-3xl font-extrabold">All Courses</CardTitle>
+        <CardTitle className="text-lg md:text-3xl font-extrabold">
+          All Courses
+        </CardTitle>
         <Button
-          className="p-5"
+          className="p2 md:p-5"
           onClick={() => {
             setCurrentEditedCourseId(null);
             setCourseLandingFormData(courseLandingInitialFormData);
@@ -59,8 +61,10 @@ const InstructorCourses = ({ courses }) => {
                     <TableRow key={course._id}>
                       <TableCell>{course?.title}</TableCell>
                       <TableCell>{course?.students.length}</TableCell>
-                      <TableCell>${course?.pricing}</TableCell>
-                      <TableCell className="text-right space-x-2">
+                      <TableCell>
+                        ${course?.students?.length * course?.pricing}
+                      </TableCell>
+                      <TableCell className="text-right space-x-2 space-y-2">
                         <Button
                           variant="ghost"
                           size="sm"

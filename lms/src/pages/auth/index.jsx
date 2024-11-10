@@ -6,6 +6,7 @@ import CommonForm from "@/components/common-form";
 import { emailRegex, signInFormControls, signUpFormControls } from "@/config";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AuthContext } from "@/context/auth-context";
+import { ErrorToast } from "@/components/toasts/error-toast";
 
 const AuthPage = () => {
   const [activeTab, setActiveTab] = useState("signin");
@@ -43,14 +44,14 @@ const AuthPage = () => {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col h-screen ">
       <header className="px-4 lg:px-6 h-14 flex items-center border-b ">
         <Link to={"/"} className="flex items-center justify-center ">
           <GraduationCap className="h-8 w-8 mr-4" />
           <span className="font-extrabold text-xl">LMS LEARN</span>
         </Link>
       </header>
-      <div className="flex items-center justify-center min-h-screen bg-background">
+      <div className="flex items-center justify-center bg-background h-full">
         <Tabs
           value={activeTab}
           onValueChange={handleTabChange}
@@ -99,6 +100,8 @@ const AuthPage = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <ErrorToast />
     </div>
   );
 };
