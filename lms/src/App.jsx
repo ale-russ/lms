@@ -1,9 +1,9 @@
 import { Route, Routes } from "react-router-dom";
+import { useContext } from "react";
 
 import "./App.css";
 
 import AuthPage from "./pages/auth";
-import { useContext } from "react";
 import { AuthContext } from "./context/auth-context";
 import RouteGuard from "./components/route-guard";
 import InstructorDashboardPage from "./pages/instructor";
@@ -21,73 +21,75 @@ function App() {
   const { auth } = useContext(AuthContext);
 
   return (
-    <Routes>
-      <Route
-        path="/auth"
-        element={
-          <RouteGuard
-            element={<AuthPage />}
-            authenticated={auth?.authenticate}
-            user={auth?.user}
-          />
-        }
-      />
-      <Route
-        path="/instructor"
-        element={
-          <RouteGuard
-            element={<InstructorDashboardPage />}
-            authenticated={auth?.authenticate}
-            user={auth?.user}
-          />
-        }
-      />
-      <Route
-        path="/instructor/create-course"
-        element={
-          <RouteGuard
-            element={<AddNewCoursePage />}
-            authenticated={auth?.authenticate}
-            user={auth?.user}
-          />
-        }
-      />
-      <Route
-        path="/instructor/edit-course/:courseId"
-        element={
-          <RouteGuard
-            element={<AddNewCoursePage />}
-            authenticated={auth?.authenticate}
-            user={auth?.user}
-          />
-        }
-      />
-      <Route
-        path="/"
-        element={
-          <RouteGuard
-            element={<StudentViewCommonLayout />}
-            authenticated={auth?.authenticate}
-            user={auth?.user}
-          />
-        }
-      >
-        <Route path="" element={<StudentHomePage />} />
-        <Route path="home" element={<StudentHomePage />} />
-        <Route path="courses" element={<StudentCoursesViewPage />} />
+    <>
+      <Routes>
         <Route
-          path="course/details/:id"
-          element={<StudentCourseDetailsPage />}
+          path="/auth"
+          element={
+            <RouteGuard
+              element={<AuthPage />}
+              authenticated={auth?.authenticate}
+              user={auth?.user}
+            />
+          }
         />
-        <Route path="payment-return" element={<PaypalPaymentReturnPage />} />
-        <Route path="student-courses" element={<StudentCourses />} />
         <Route
-          path="course-progress/:courseId"
-          element={<StudentCourseProgressPage />}
+          path="/instructor"
+          element={
+            <RouteGuard
+              element={<InstructorDashboardPage />}
+              authenticated={auth?.authenticate}
+              user={auth?.user}
+            />
+          }
         />
-      </Route>
-      <Route path="*" element={<NotFoundPage />} />
-    </Routes>
+        <Route
+          path="/instructor/create-course"
+          element={
+            <RouteGuard
+              element={<AddNewCoursePage />}
+              authenticated={auth?.authenticate}
+              user={auth?.user}
+            />
+          }
+        />
+        <Route
+          path="/instructor/edit-course/:courseId"
+          element={
+            <RouteGuard
+              element={<AddNewCoursePage />}
+              authenticated={auth?.authenticate}
+              user={auth?.user}
+            />
+          }
+        />
+        <Route
+          path="/"
+          element={
+            <RouteGuard
+              element={<StudentViewCommonLayout />}
+              authenticated={auth?.authenticate}
+              user={auth?.user}
+            />
+          }
+        >
+          <Route path="" element={<StudentHomePage />} />
+          <Route path="home" element={<StudentHomePage />} />
+          <Route path="courses" element={<StudentCoursesViewPage />} />
+          <Route
+            path="course/details/:id"
+            element={<StudentCourseDetailsPage />}
+          />
+          <Route path="payment-return" element={<PaypalPaymentReturnPage />} />
+          <Route path="student-courses" element={<StudentCourses />} />
+          <Route
+            path="course-progress/:courseId"
+            element={<StudentCourseProgressPage />}
+          />
+        </Route>
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </>
   );
 }
 

@@ -7,14 +7,25 @@ const registerUser = async (req, res) => {
   try {
     const { userName, userEmail, password, role } = req.body;
 
-    const existingUser = await User.findOne({ $or: [{ userEmail, userName }] });
+    const existingUser = await User.findOne({
+      $or: [
+        { userEmail: { $regex: new RegExp(`^${userEmail}$`, "i") } },
+        { userName: userName },
+      ],
+    });
 
-    if (existingUser)
+    console.log("existing user: ", existingUser);
+
+    if (existingUser) {
+      const field =
+        existingUser.userEmail.toLowerCase() === userEmail.toLowerCase()
+          ? "Email"
+          : "Username";
       return res.status(400).json({
         success: false,
-        message: "User name or user email already exist",
+        message: `${field} already exists. Please try again.`,
       });
-
+    }
     const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({
       userName,
@@ -29,7 +40,7 @@ const registerUser = async (req, res) => {
       message: "User registered successfully",
     });
   } catch (error) {
-    console.log(`Error: `, error);
+    console.log(`Error in Registration: `, error);
     return res
       .status(500)
       .json({ success: false, message: "Internal Server Error" });
