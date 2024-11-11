@@ -8,12 +8,9 @@ import App from "./App.jsx";
 import AuthProvider from "./context/auth-context";
 import InstructorProvider from "./context/instructor-context";
 import StudentProvider from "./context/student-context";
-import { ToastProvider } from "./components/ui/toast";
-// import { Toaster } from "./components/ui/toaster";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    {/* <ToastProvider> */}
     <Toaster richColors />
     <BrowserRouter>
       <AuthProvider>
