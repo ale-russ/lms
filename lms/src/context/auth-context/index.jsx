@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { initialSignInFormData, initialSignUpFormData } from "@/config";
 import { createContext } from "react";
@@ -10,11 +11,6 @@ export const AuthContext = createContext(null);
 export default function AuthProvider({ children }) {
   const [signInFormData, setSignInFormData] = useState(initialSignInFormData);
   const [signUpFormData, setSignUpFormData] = useState(initialSignUpFormData);
-  const [showError, setShowError] = useState({
-    title: "",
-    description: "",
-    show: false,
-  });
   const [toastType, setToastType] = useState("");
   const [auth, setAuth] = useState({
     authenticate: false,
@@ -27,14 +23,12 @@ export default function AuthProvider({ children }) {
     try {
       setLoading(true);
       await registerUser(signUpFormData);
+      toast.success(
+        "Registration Successful. Please Login With Your Credentials"
+      );
     } catch (err) {
       console.log("Error: ", err);
-      setShowError({
-        title: "Login Error",
-        description: err,
-        show: true,
-      });
-      setToastType("destructive");
+      toast.error(err || "Registration Failed. Please Try Again");
     } finally {
       setSignUpFormData(initialSignUpFormData);
       setLoading(false);
@@ -55,16 +49,11 @@ export default function AuthProvider({ children }) {
         setAuth({ authenticate: true, user: data.data.user });
       } else {
         setAuth({ authenticate: false, user: null });
+        toast.error("Login Failed");
       }
     } catch (err) {
       console.log("Error in login: ", err);
-      setShowError({
-        title: "Login Error",
-        description: err,
-        show: true,
-      });
-      setToastType("destructive");
-      setAuth({ authenticate: false, user: null });
+      toast.error(err || "Failed to login");
     } finally {
       setSignInFormData(initialSignInFormData);
       setLoading(false);
@@ -107,8 +96,6 @@ export default function AuthProvider({ children }) {
         signUpFormData,
         setSignInFormData,
         setSignUpFormData,
-        showError,
-        setShowError,
         toastType,
         setToastType,
         loading,

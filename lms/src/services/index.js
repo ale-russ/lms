@@ -1,10 +1,10 @@
 import axiosInstance from "@/api/axiosInstance";
-import { progress } from "framer-motion";
 
 export async function registerUser(formData) {
   try {
     await axiosInstance.post("/auth/register", formData);
   } catch (error) {
+    console.log("Error: ", error);
     throw error?.response?.data?.message;
   }
 }

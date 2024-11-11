@@ -18,6 +18,7 @@ import {
   courseLandingInitialFormData,
 } from "@/config";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
 
 const AddNewCoursePage = () => {
   const {
@@ -56,6 +57,7 @@ const AddNewCoursePage = () => {
         isEmpty(item.videoUrl) ||
         isEmpty(item.public_id)
       ) {
+        toast.error("All Fields Are Required. Please Fill All Forms");
         return false;
       }
 
@@ -78,15 +80,19 @@ const AddNewCoursePage = () => {
       isPublished: true,
     };
 
-    const response =
-      currentEditedCourseId !== null
-        ? await updateCourseService(currentEditedCourseId, formData)
-        : await addNewCoursesService(formData);
+    try {
+      const response =
+        currentEditedCourseId !== null
+          ? await updateCourseService(currentEditedCourseId, formData)
+          : await addNewCoursesService(formData);
 
-    if (response?.success) {
-      setCourseLandingFormData(courseLandingInitialFormData);
-      setCourseCurriculumFormData(courseCurriculumInitialFormData);
-      navigate(-1); //which means go to the previous page
+      if (response?.success) {
+        setCourseLandingFormData(courseLandingInitialFormData);
+        setCourseCurriculumFormData(courseCurriculumInitialFormData);
+        navigate(-1); //which means go to the previous page
+      }
+    } catch (error) {
+      toast.error("Error Creating Course. Please Try Again");
     }
   }
 
@@ -95,15 +101,19 @@ const AddNewCoursePage = () => {
       currentEditedCourseId
     );
 
-    if (response?.success) {
-      const setCourseFormData = Object.keys(
-        courseLandingInitialFormData
-      ).reduce((acc, key) => {
-        acc[key] = response?.data[key] || courseLandingInitialFormData[key];
-        return acc;
-      }, {});
-      setCourseLandingFormData(setCourseFormData);
-      setCourseCurriculumFormData(response?.data?.curriculum);
+    try {
+      if (response?.success) {
+        const setCourseFormData = Object.keys(
+          courseLandingInitialFormData
+        ).reduce((acc, key) => {
+          acc[key] = response?.data[key] || courseLandingInitialFormData[key];
+          return acc;
+        }, {});
+        setCourseLandingFormData(setCourseFormData);
+        setCourseCurriculumFormData(response?.data?.curriculum);
+      }
+    } catch (error) {
+      toast.error("Error Fetching Courses. Please Try Again");
     }
   }
 

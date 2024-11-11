@@ -100,8 +100,6 @@ const AuthPage = () => {
           </TabsContent>
         </Tabs>
       </div>
-
-      <ErrorToast />
     </div>
   );
 };
