@@ -7,10 +7,11 @@ import { StudentContext } from "@/context/student-context";
 import Loader from "@/components/loader";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "@/context/auth-context";
+// import { AuthContext } from "@/context/auth-context";
 
 const StudentHomePage = () => {
   const navigate = useNavigate();
+
   const {
     studentCourses,
     fetchAllStudentCourses,

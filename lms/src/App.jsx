@@ -63,7 +63,7 @@ function App() {
             />
           }
         />
-        <Route
+        {/* <Route
           path="/"
           element={
             <RouteGuard
@@ -86,6 +86,38 @@ function App() {
             path="course-progress/:courseId"
             element={<StudentCourseProgressPage />}
           />
+        </Route> */}
+        <Route path="/" element={<StudentViewCommonLayout />}>
+          <Route path="" element={<StudentHomePage />} />
+          <Route path="home" element={<StudentHomePage />} />
+          <Route path="courses" element={<StudentCoursesViewPage />} />
+          <Route
+            path="course/details/:id"
+            element={<StudentCourseDetailsPage />}
+          />
+          <Route
+            element={
+              <RouteGuard
+                authenticated={auth?.authenticate}
+                user={auth?.user}
+              />
+            }
+          >
+            <Route path="courses" element={<StudentCoursesViewPage />} />
+            <Route
+              path="course/details/:id"
+              element={<StudentCourseDetailsPage />}
+            />
+            <Route
+              path="payment-return"
+              element={<PaypalPaymentReturnPage />}
+            />
+            <Route path="student-courses" element={<StudentCourses />} />
+            <Route
+              path="course-progress/:courseId"
+              element={<StudentCourseProgressPage />}
+            />
+          </Route>
         </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

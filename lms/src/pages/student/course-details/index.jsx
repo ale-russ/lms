@@ -42,6 +42,7 @@ function StudentCourseDetailsPage() {
   } = useContext(StudentContext);
 
   const { auth } = useContext(AuthContext);
+  console.log("Auth: ", auth);
 
   const [displayCurrentVideoFreePreview, setDisplayCurrentVideoFreePreview] =
     useState(null);
@@ -55,6 +56,8 @@ function StudentCourseDetailsPage() {
         courseId,
         auth?.user?._id
       );
+
+      console.log("CoursePurchaseStatus: ", coursePurchaseStatus);
 
       setIsCoursePurchased(coursePurchaseStatus.data);
 
@@ -70,6 +73,7 @@ function StudentCourseDetailsPage() {
       setStudentCourseDetails(response?.data);
     } catch (err) {
       setStudentCourseDetails(null);
+      console.log("Error: ", err);
     } finally {
       setTimeout(() => setLoadingState(false), 300);
     }
@@ -109,11 +113,6 @@ function StudentCourseDetailsPage() {
       window.location.replace(response?.data?.approvalUrl);
     } else {
       console.log("Error response: ", response);
-      // showErrorToast({
-      //   title: "Payment Error",
-      //   description: response?.message,
-      //   tryAgin: false,
-      // });
     }
   }
 
@@ -125,11 +124,13 @@ function StudentCourseDetailsPage() {
   }, [params.id]);
 
   useEffect(() => {
+    console.log("in useEffect");
     if (!location.pathname.includes("/course/details")) {
       setCurrentCourseDetailsId(null);
       setStudentCourseDetails(null);
       // purchasedCourseId(null);
     }
+    console.log("In use effect");
   }, [location.pathname]);
 
   useEffect(() => {

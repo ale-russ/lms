@@ -26,8 +26,10 @@ const createOrder = async (req, res) => {
     const existingOrder = await Order.findOne({
       userId,
       courseId,
-      $or: [{ orderStatus: "pending" }, { orderStatus: "confirmed" }],
+      $or: [{ orderStatus: "confirmed" }],
     });
+
+    console.log("Existing Order: ", existingOrder);
 
     if (existingOrder) {
       return res.status(400).json({

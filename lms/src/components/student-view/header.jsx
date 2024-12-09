@@ -8,10 +8,16 @@ import { AuthContext } from "@/context/auth-context";
 function StudentHeader() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { resetCredentials } = useContext(AuthContext);
+  const { resetCredentials, auth } = useContext(AuthContext);
+
+  const handleAuthButton = () => {
+    auth.authenticate ? handleLogout() : navigate("/auth");
+  };
+
   const handleLogout = () => {
     resetCredentials();
   };
+
   return (
     <div className="flex items-center justify-between p-4 border-b relative">
       <div className="flex items-center space-x-4">
@@ -35,6 +41,7 @@ function StudentHeader() {
           </Button>
         </div>
       </div>
+      {/* {auth.authenticate ? ( */}
       <div className="flex items-center space-x-4">
         <div className="flex gap-4 items-center">
           <div
@@ -47,8 +54,11 @@ function StudentHeader() {
             <TvMinimalPlay className="h-8 w-8 cursor-pointer" />
           </div>
         </div>
-        <Button onClick={handleLogout}>Sign Out</Button>
+        <Button onClick={handleAuthButton}>
+          {auth.authenticate ? "Sign Out" : "Login"}
+        </Button>
       </div>
+      {/* ) : null} */}
     </div>
   );
 }

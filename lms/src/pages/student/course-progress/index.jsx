@@ -121,6 +121,8 @@ function StudentCourseProgressPage() {
     if (showConfetti) setTimeout(() => setShowConfetti(false), 5000);
   }, [showConfetti]);
 
+  console.log("in course progress page");
+
   return (
     <div className="flex flex-col h-screen bg-[#1c1d1f] text-white">
       {showConfetti && <ReactConfetti />}
